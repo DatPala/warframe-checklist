@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warframe Checklist</title>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a22;
+    --surface2: #1e2433;
+    --border: #2a3045;
+    --accent: #00d4ff;
+    --accent2: #c84b00;
+    --weekly: #b06aff;
+    --vendor: #e8a020;
+    --text: #d0dce8;
+    --muted: #6a7a90;
+    --done-bg: #0f1a10;
+    --done-text: #3a5c3a;
+    --gold: #f5c342;
+    --edit-bar: #1a1f2e;
+    --edit-accent: #00d4ff;
+    --danger: #e05050;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  /* HEADER */
+  header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 32px; flex-wrap: wrap;
+  }
+  .logo { font-size: 1.6rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); text-shadow: 0 0 16px rgba(0,212,255,0.4); }
+  .logo span { color: var(--accent2); }
+  .timers { display: flex; gap: 12px; flex-wrap: wrap; }
+  .timer-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 0.78rem; text-align: center; min-width: 130px; }
+  .timer-box .label { color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 1px; font-size: 0.68rem; }
+  .timer-box .countdown { font-size: 1.05rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .daily-countdown { color: var(--accent); }
+  .weekly-countdown { color: var(--weekly); }
+
+  /* EDIT TOGGLE */
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .edit-toggle {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 7px 14px; font-size: 0.8rem; cursor: pointer;
+    transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .edit-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .edit-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.08); }
+  .edit-toggle svg { width: 14px; height: 14px; }
+
+  /* ROWS */
+  .row { display: grid; gap: 24px; max-width: 1100px; margin: 0 auto 24px; }
+  .row-2 { grid-template-columns: 1fr 1fr; }
+  .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 900px) { .row-3 { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .row-2, .row-3 { grid-template-columns: 1fr; } }
+
+  /* SECTION */
+  .section { background: var(--surface); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
+  .section-title-wrap { display: flex; align-items: center; gap: 8px; }
+  .section-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+  .daily  .section-title { color: var(--accent); }
+  .weekly .section-title { color: var(--weekly); }
+  .vendor .section-title { color: var(--vendor); }
+  .section-title-input {
+    font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+    background: transparent; border: none; border-bottom: 1px dashed var(--muted);
+    color: inherit; outline: none; width: 180px; padding: 2px 0;
+  }
+  .daily  .section-title-input { color: var(--accent); }
+  .weekly .section-title-input { color: var(--weekly); }
+  .vendor .section-title-input { color: var(--vendor); }
+
+  .progress-wrap { display: flex; align-items: center; gap: 8px; }
+  .progress-bar { width: 70px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .daily  .progress-fill { background: var(--accent); }
+  .weekly .progress-fill { background: var(--weekly); }
+  .vendor .progress-fill { background: var(--vendor); }
+  .progress-text { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+  .reset-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 4px 10px; font-size: 0.72rem; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+  .daily  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .weekly .reset-btn:hover { border-color: var(--weekly); color: var(--weekly); }
+  .vendor .reset-btn:hover { border-color: var(--vendor); color: var(--vendor); }
+
+  .task-list { padding: 8px 0; }
+
+  /* TASKS */
+  .task { display: flex; align-items: flex-start; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--border); transition: background 0.15s; user-select: none; }
+  .task:last-child { border-bottom: none; }
+  .task:not(.edit-mode):hover { background: var(--surface2); cursor: pointer; }
+  .task.done { background: var(--done-bg); }
+  .task.done .task-name   { color: var(--done-text); text-decoration: line-through; }
+  .task.done .task-reward { color: var(--done-text); }
+  .task.done .task-icon   { filter: grayscale(1) opacity(0.4); }
+  .checkbox { width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--border); flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; font-size: 0.8rem; }
+  .task.done .checkbox { background: #1a5c1a; border-color: #2a8a2a; color: #5ddb5d; }
+  .task-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+  .task-info { flex: 1; min-width: 0; }
+  .task-name   { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+  .task-reward { font-size: 0.75rem; color: var(--gold); }
+  .task-note   { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+  /* CATEGORY DIVIDER */
+  .category-divider { display: flex; align-items: center; gap: 8px; padding: 6px 18px 4px; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); background: var(--bg); border-bottom: 1px solid var(--border); }
+  .cat-name-input { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); background: transparent; border: none; border-bottom: 1px dashed var(--muted); outline: none; width: 160px; padding: 0; }
+  .cat-actions { display: none; gap: 4px; margin-left: auto; }
+  .edit-active .cat-actions { display: flex; }
+
+  /* EDIT CONTROLS on tasks */
+  .task-edit-controls { display: none; align-items: center; gap: 4px; flex-shrink: 0; }
+  .edit-active .task-edit-controls { display: flex; }
+  .drag-handle { cursor: grab; color: var(--muted); font-size: 1rem; padding: 2px 4px; touch-action: none; }
+  .drag-handle:active { cursor: grabbing; }
+
+  /* ICON EDIT */
+  .task-icon-wrap { position: relative; }
+  .edit-active .task-icon { cursor: pointer; border-radius: 4px; padding: 2px; }
+  .edit-active .task-icon:hover { background: var(--surface2); outline: 1px dashed var(--muted); }
+  .emoji-picker { display: none; position: absolute; top: 28px; left: 0; z-index: 100; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px; width: 220px; flex-wrap: wrap; gap: 4px; max-height: 180px; overflow-y: auto; }
+  .emoji-picker.open { display: flex; }
+  .ep-emoji { font-size: 1.1rem; cursor: pointer; padding: 3px; border-radius: 4px; }
+  .ep-emoji:hover { background: var(--surface2); }
+
+  /* INLINE EDIT FIELDS */
+  .edit-active .task-name, .edit-active .task-reward, .edit-active .task-note {
+    background: transparent; border: none; border-bottom: 1px dashed var(--muted);
+    color: inherit; outline: none; font: inherit; width: 100%; padding: 1px 0;
+  }
+  .edit-active .task-name   { font-size: 0.9rem; font-weight: 600; }
+  .edit-active .task-reward { font-size: 0.75rem; color: var(--gold); }
+  .edit-active .task-note   { font-size: 0.72rem; color: var(--muted); }
+
+  /* ICON BUTTONS */
+  .icon-btn { background: none; border: none; cursor: pointer; padding: 4px 5px; border-radius: 5px; font-size: 0.85rem; transition: background 0.15s, color 0.15s; color: var(--muted); }
+  .icon-btn:hover { background: var(--surface2); }
+  .icon-btn.danger:hover { color: var(--danger); background: rgba(224,80,80,0.1); }
+  .icon-btn.up:hover, .icon-btn.dn:hover { color: var(--accent); }
+
+  /* MOVE TO SECTION DROPDOWN */
+  .move-select { font-size: 0.72rem; background: var(--surface2); border: 1px solid var(--border); color: var(--text); border-radius: 5px; padding: 3px 4px; cursor: pointer; max-width: 110px; }
+
+  /* ADD BUTTONS */
+  .add-row { display: none; padding: 8px 18px; border-top: 1px solid var(--border); }
+  .edit-active .add-row { display: block; }
+  .add-btn { background: none; border: 1px dashed var(--border); color: var(--muted); border-radius: 7px; padding: 6px 12px; font-size: 0.76rem; cursor: pointer; width: 100%; text-align: left; transition: all 0.15s; }
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .add-cat-btn { margin-top: 6px; }
+
+  .all-done-banner { display: none; padding: 10px 18px; text-align: center; font-size: 0.82rem; font-weight: 700; color: #5ddb5d; letter-spacing: 1px; }
+
+  /* DRAG GHOST */
+  .drag-over { border-top: 2px solid var(--accent); }
+
+  /* MOVE TARGET highlight */
+  .task.dragging { opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">WAR<span>FRAME</span> CHECKLIST</div>
+  <div class="header-right">
+    <div class="timers">
+      <div class="timer-box">
+        <div class="label">Daily Reset</div>
+        <div class="countdown daily-countdown" id="daily-timer">--:--:--</div>
+      </div>
+      <div class="timer-box">
+        <div class="label">Weekly Reset</div>
+        <div class="countdown weekly-countdown" id="weekly-timer">--d --:--:--</div>
+      </div>
+    </div>
+    <button class="edit-toggle" id="editToggle" onclick="toggleEdit()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit
+    </button>
+  </div>
+</header>
+
+<div class="row row-3" id="row1">
+  <div class="section daily" id="sec-daily"></div>
+  <div class="section vendor" id="sec-dvendor"></div>
+  <div class="section vendor" id="sec-standing"></div>
+</div>
+<div class="row row-2" id="row2">
+  <div class="section weekly" id="sec-weekly"></div>
+  <div class="section weekly" id="sec-wvendor"></div>
+</div>
+
+<script>
+const EMOJIS = ['🎁','🔴','🌙','🧬','🛹','⚗️','💠','⚔️','🪶','🤖','🏕','🏭','🦋','👻','🔮','🧬','💀','⚡','🔱','🧿','🌀','⏳','🎮','🗡','🌊','📅','🤝','🏺','🗂','💰','🛒','⚜️','🐦','☠️','⚡','🔮','📈','🏪','⭐','🎯','🔥','💎','🌟','🏆','💡','📌','🔔','🎪','🗓','🛸'];
+
+const DEFAULT_DATA = {
+  sectionMeta: {
+    daily:    { title: '⚡ Daily Tasks',           colorClass: 'daily'  },
+    dvendor:  { title: '🏪 Daily Vendors',         colorClass: 'vendor' },
+    standing: { title: '📈 Daily Standing',        colorClass: 'vendor' },
+    weekly:   { title: '🗓 Weekly Tasks',           colorClass: 'weekly' },
+    wvendor:  { title: '🛒 Weekly Vendors',        colorClass: 'weekly' },
+  },
+  sections: {
+    daily: {
+      reset: 'daily',
+      categories: [
+        { cat: 'Essential', tasks: [
+          { id:'d1', icon:'🎁', name:'Daily Tribute / Login Reward', reward:'Endo, Credits, Mods, Boosters', note:'Log in to claim — escalates on milestone days' },
+          { id:'d2', icon:'🔴', name:'Sortie (3 missions)', reward:'Anasa Sculpture, Riven Mod, Legendary Core chance', note:'New set daily. Requires The War Within.' },
+          { id:'d3', icon:'🌙', name:'Nightwave Daily Challenge', reward:'Nightwave XP → Nora Credits', note:'Check Nightwave screen for today\'s Act challenge' },
+        ]},
+
+      ]
+    },
+    dvendor: {
+      reset: 'daily',
+      categories: [
+        { cat: 'Zariman', tasks: [
+          { id:'dv1', icon:'🪶', name:'Archimedean Yonta – Voidplume Exchange', reward:'Holdfasts standing', note:'Trade Voidplume Downs/Vanes/Crests for standing. Rotates every 8h.' },
+        ]},
+        { cat: 'Sanctum Anatomica', tasks: [
+          { id:'dv2', icon:'🤖', name:'Loid – Resource-to-Voca Trade', reward:'Voca → Cavia standing', note:'Trade Deimos resources for Voca, then convert to Cavia rep' },
+        ]},
+      ]
+    },
+    standing: {
+      reset: 'daily',
+      categories: [
+        { cat: 'Open World', tasks: [
+          { id:'st1', icon:'🏕', name:'Ostron (Cetus)', reward:'Ostron standing → Zaw parts, Fisher/Miner gear', note:'Cap daily rep via Bounties or Fishing/Mining on the Plains' },
+          { id:'st2', icon:'🏭', name:'Solaris United (Fortuna)', reward:'Solaris standing → Kitgun parts, K-Drive gear', note:'Cap via Bounties or Mining/Fishing on Orb Vallis' },
+          { id:'st3', icon:'🦋', name:'Entrati (Necralisk / Deimos)', reward:'Entrati standing → Warframe/weapon parts, Necramech gear', note:'Cap via Deimos Bounties or Grandmother\'s daily exchange' },
+        ]},
+        { cat: 'Zariman', tasks: [
+          { id:'st4', icon:'👻', name:'The Holdfasts (Zariman)', reward:'Holdfasts standing → Incarnon weapons, Gyre parts', note:'Earn by trading Voidplumes to Yonta' },
+          { id:'st5', icon:'🔮', name:'The Quills (Cetus)', reward:'Quills standing → Operator Amps, Arcanes', note:'Trade Sentient Cores to Little Duck or Quills' },
+        ]},
+        { cat: 'Deimos', tasks: [
+          { id:'st6', icon:'🧬', name:'Cavia (Sanctum Anatomica)', reward:'Cavia standing → Netracell access, Bird 3 shop, Arcanes', note:'Trade Voca to Loid; also via Sanctum Anatomica bounties' },
+          { id:'st7', icon:'💀', name:'Necraloid (Necralisk)', reward:'Necraloid standing → Necramech parts, Helminth segments', note:'Trade Orokin Matrices from Deimos missions' },
+        ]},
+        { cat: 'Warframe 1999', tasks: [
+          { id:'st8', icon:'⚡', name:'The Hex (Höllvania / WF1999)', reward:'Hex standing → WF1999 gear, Archon Shards, Arcanes', note:'Farm via WF1999 missions and Calendar tasks' },
+        ]},
+      ]
+    },
+    weekly: {
+      reset: 'weekly',
+      categories: [
+        { cat: 'Top Priority', tasks: [
+          { id:'w1', icon:'🔱', name:'Archon Hunt (3 missions)', reward:'Archon Shard + Archon Mod drops', note:'Requires Veil-Breaker quest.' },
+          { id:'w2', icon:'🧿', name:'Netracells (up to 5)', reward:'Entrati Lanthorn, Archon Shards, Arcanes, Melee Adapters', note:'5 Voidrig Pustules per week, 1 consumed per run' },
+          { id:'w3', icon:'🌀', name:'Deep Archimedea', reward:'Archon Shards, Research Points, Arcanes', note:'Match loadout to mission rules for best rewards' },
+          { id:'w4', icon:'⏳', name:'Temporal Archimedea (WF1999)', reward:'Archon Shards, high-level rewards', note:'Harder WF1999 version of Deep Archimedea' },
+        ]},
+        { cat: 'Core Weeklies', tasks: [
+          { id:'w5', icon:'🎮', name:'Duviri Circuit – Normal Mode', reward:'Warframe blueprints (11-week rotation)', note:'Pick 1 of 3 offered Warframes to farm' },
+          { id:'w6', icon:'🗡', name:'Duviri Circuit – Steel Path', reward:'Incarnon Adapters (8-week rotation)', note:'Check if this week\'s adapter is one you need!' },
+          { id:'w7', icon:'🌊', name:'Descendia – Normal', reward:'Arcanes, Adapters, Endo, Orokin Catalyst/Reactor chance', note:'Rewards every 2 floors; fight Uriel at the bottom' },
+          { id:'w7b', icon:'🌊', name:'Descendia – Steel Path', reward:'Arcanes, Steel Essence, higher-tier rewards', note:'Harder version with better loot — same floor structure, fight Uriel at the bottom' },
+          { id:'w8', icon:'📅', name:'Warframe 1999 Calendar Tasks', reward:'Archon Shards, Rivens, Arcanes', note:'3-month rotation. Pair with Heks rep farming.' },
+        ]},
+        { cat: 'Other', tasks: [
+          { id:'w9', icon:'🤝', name:'Help Clem (Darvo Mission)', reward:'Clem Specter Blueprint', note:'Talk to Darvo in any Relay.' },
+          { id:'w10', icon:'🏺', name:'Maroo\'s Ayatan Mission', reward:'Ayatan Sculpture → Endo when sold', note:'Great Endo source.' },
+          { id:'w11', icon:'🗂', name:'Check Coda Weapons (WF1999)', reward:'Strong weapon with 60%+ Status Anomaly roll', note:'Rotates weekly' },
+          { id:'w12', icon:'💰', name:'Cal Mission (Drifter Camp)', reward:'Stock → Archon Mods, Styanax, gear', note:'After Veil-Breaker quest.' },
+        ]},
+        { cat: 'Nightwave', tasks: [
+          { id:'w13', icon:'🌙', name:'Nightwave Weekly Challenges', reward:'Nightwave XP → Nora Credits (Catalysts, Forma, Slots)', note:'Check all 3–4 weeklies in the Nightwave screen' },
+        ]},
+      ]
+    },
+    wvendor: {
+      reset: 'weekly',
+      categories: [
+        { cat: 'Duviri', tasks: [
+          { id:'wv3', icon:'🛒', name:'Acrithis Shop', reward:'Riven Mods, Catalysts, Forma, Arcanes, Adapters', note:'Spend Pathos Clamps.' },
+        ]},
+        { cat: 'Steel Path', tasks: [
+          { id:'wv4', icon:'⚜️', name:'Teshin\'s Steel Path Honors', reward:'Umbra Forma, 3x Forma, Riven Cipher, Rivens', note:'Spend Steel Essence.' },
+        ]},
+        { cat: 'Deimos / Luvbrick', tasks: [
+          { id:'wv5', icon:'🐦', name:'Bird 3 – Archon Shard Shop', reward:'Rotating Archon Shards', note:'Requires Cavia Rank 5.' },
+        ]},
+        { cat: 'Red Veil', tasks: [
+          { id:'wv7', icon:'☠️', name:'Ironwake Shop', reward:'Riven Mods, Kuva', note:'Spend Riven Slivers.' },
+        ]},
+        { cat: 'Warframe 1999', tasks: [
+          { id:'wv8', icon:'⚡', name:'Kaya – Weekly Arcane Shop', reward:'Rotating Arcane Enhancements', note:'Check Kaya\'s weekly Arcane offering in Höllvania' },
+        ]},
+      ]
+    },
+  }
+};
+
+const SECTION_IDS = ['daily','dvendor','standing','weekly','wvendor'];
+const DATA_KEY   = 'wf_data_v5';
+const CHECK_KEY  = 'wf_check_v5';
+const RESET_KEY  = 'wf_reset_v5';
+
+let editMode = false;
+let data, checked;
+let dragSrc = null, dragSrcSec = null, dragSrcCatIdx = null, dragSrcTaskIdx = null;
+let openPicker = null;
+
+function uid() { return Math.random().toString(36).slice(2,8); }
+
+function todayMidnight() { const d=new Date(); d.setHours(24,0,0,0); return d.getTime(); }
+function nextMondayMidnight() {
+  const d=new Date(); const day=d.getDay();
+  d.setDate(d.getDate()+(day===0?1:8-day)); d.setHours(0,0,0,0); return d.getTime();
+}
+function getResetTime(type) { return type==='weekly'?nextMondayMidnight():todayMidnight(); }
+
+function loadAll() {
+  try { data = JSON.parse(localStorage.getItem(DATA_KEY)); } catch{}
+  if (!data) data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  // migrate: ensure sectionMeta exists
+  if (!data.sectionMeta) data.sectionMeta = JSON.parse(JSON.stringify(DEFAULT_DATA.sectionMeta));
+
+  const storedResets = JSON.parse(localStorage.getItem(RESET_KEY)||'{}');
+  const storedChecked = JSON.parse(localStorage.getItem(CHECK_KEY)||'{}');
+  const now = Date.now();
+  checked = {};
+
+  for (const sec of SECTION_IDS) {
+    const resetType = data.sections[sec].reset;
+    const storedReset = storedResets[sec]||0;
+    if (now >= storedReset) {
+      checked[sec] = {};
+      storedResets[sec] = getResetTime(resetType);
+    } else {
+      checked[sec] = storedChecked[sec]||{};
+    }
+  }
+  localStorage.setItem(RESET_KEY, JSON.stringify(storedResets));
+}
+
+function saveData() { localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+function saveChecked() { localStorage.setItem(CHECK_KEY, JSON.stringify(checked)); }
+
+function getAllTasks(sec) {
+  return data.sections[sec].categories.flatMap(c=>c.tasks);
+}
+
+function renderAll() {
+  for (const sec of SECTION_IDS) renderSection(sec);
+}
+
+function renderSection(sec) {
+  const el = document.getElementById('sec-'+sec);
+  const meta = data.sectionMeta[sec];
+  const secData = data.sections[sec];
+  const chk = checked[sec];
+  const allTasks = getAllTasks(sec);
+  const doneCount = allTasks.filter(t=>chk[t.id]).length;
+  const total = allTasks.length;
+  const pct = total ? doneCount/total*100 : 0;
+
+  el.className = 'section '+meta.colorClass;
+
+  const titleEl = editMode
+    ? `<input class="section-title-input" value="${esc(meta.title)}" onchange="data.sectionMeta['${sec}'].title=this.value;saveData()" />`
+    : `<span class="section-title">${esc(meta.title)}</span>`;
+
+  let html = `
+    <div class="section-header">
+      <div class="section-title-wrap">${titleEl}</div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <span class="progress-text">${doneCount} / ${total}</span>
+        <button class="reset-btn" onclick="resetSec('${sec}')">Reset</button>
+      </div>
+    </div>
+    <div class="task-list" id="list-${sec}">`;
+
+  secData.categories.forEach((cat, ci) => {
+    const catActions = editMode
+      ? `<div class="cat-actions">
+           <button class="icon-btn" title="Rename" onclick="renameCat('${sec}',${ci})">✏️</button>
+           <button class="icon-btn danger" title="Delete category" onclick="deleteCat('${sec}',${ci})">🗑</button>
+         </div>`
+      : '';
+    const catNameEl = editMode
+      ? `<input class="cat-name-input" value="${esc(cat.cat)}" onchange="data.sections['${sec}'].categories[${ci}].cat=this.value;saveData()" />`
+      : cat.cat;
+
+    html += `<div class="category-divider" data-sec="${sec}" data-ci="${ci}">${catNameEl}${catActions}</div>`;
+
+    cat.tasks.forEach((t, ti) => {
+      const done = !!chk[t.id];
+      const taskClass = 'task'+(done?' done':'')+(editMode?' edit-mode':'');
+      const checkEl = editMode ? '' : `<div class="checkbox">${done?'✓':''}</div>`;
+      const clickAttr = editMode ? '' : `onclick="toggle('${sec}','${t.id}')"`;
+
+      const otherSecs = SECTION_IDS.filter(s=>s!==sec).map(s=>`<option value="${s}">${esc(data.sectionMeta[s].title.replace(/^[^\w]+/,'').trim().slice(0,18))}</option>`).join('');
+      const moveEl = editMode
+        ? `<select class="move-select" title="Move to section" onchange="moveTaskToSection('${sec}',${ci},${ti},this.value);this.value=''>
+             <option value="">Move to…</option>${otherSecs}
+           </select>`
+        : '';
+
+      const editControls = editMode
+        ? `<div class="task-edit-controls">
+             <span class="drag-handle" draggable="true"
+               ondragstart="dragStart(event,'${sec}',${ci},${ti})"
+               ondragend="dragEnd(event)">⠿</span>
+             <button class="icon-btn up" title="Move up" onclick="moveTask('${sec}',${ci},${ti},-1)">↑</button>
+             <button class="icon-btn dn" title="Move down" onclick="moveTask('${sec}',${ci},${ti},1)">↓</button>
+             ${moveEl}
+             <button class="icon-btn danger" title="Delete" onclick="deleteTask('${sec}',${ci},${ti})">🗑</button>
+           </div>`
+        : '';
+
+      const iconEl = editMode
+        ? `<div class="task-icon-wrap">
+             <div class="task-icon" title="Change icon" onclick="openEmojiPicker(event,'${sec}',${ci},${ti})">${t.icon}</div>
+             <div class="emoji-picker" id="ep-${t.id}">
+               ${EMOJIS.map(e=>`<span class="ep-emoji" onclick="setIcon('${sec}',${ci},${ti},'${e}')">${e}</span>`).join('')}
+             </div>
+           </div>`
+        : `<div class="task-icon">${t.icon}</div>`;
+
+      const nameEl = editMode
+        ? `<input class="task-name" value="${esc(t.name)}" onchange="data.sections['${sec}'].categories[${ci}].tasks[${ti}].name=this.value;saveData()" />`
+        : `<div class="task-name">${esc(t.name)}</div>`;
+      const rewardEl = editMode
+        ? `<input class="task-reward" value="${esc(t.reward)}" onchange="data.sections['${sec}'].categories[${ci}].tasks[${ti}].reward=this.value;saveData()" />`
+        : `<div class="task-reward">🏆 ${esc(t.reward)}</div>`;
+      const noteEl = editMode
+        ? `<input class="task-note" value="${esc(t.note||'')}" placeholder="Add note..." onchange="data.sections['${sec}'].categories[${ci}].tasks[${ti}].note=this.value;saveData()" />`
+        : (t.note ? `<div class="task-note">${esc(t.note)}</div>` : '');
+
+      html += `<div class="${taskClass}" id="task-${t.id}" ${clickAttr}
+                 ondragover="dragOver(event,'${sec}',${ci},${ti})"
+                 ondrop="drop(event,'${sec}',${ci},${ti})">
+                 ${checkEl}${iconEl}
+                 <div class="task-info">${nameEl}${rewardEl}${noteEl}</div>
+                 ${editControls}
+               </div>`;
+    });
+  });
+
+  html += `</div>`;
+
+  if (editMode) {
+    html += `<div class="add-row edit-active">
+      <button class="add-btn" onclick="addTask('${sec}')">+ Add task</button>
+      <button class="add-btn add-cat-btn" onclick="addCategory('${sec}')">+ Add category</button>
+    </div>`;
+  }
+
+  html += `<div class="all-done-banner" style="display:${doneCount===total&&total>0?'block':'none'}">✅ All done! Well played, Tenno.</div>`;
+
+  el.innerHTML = html;
+
+  // mark edit-active for CSS selectors
+  if (editMode) el.classList.add('edit-active');
+  else el.classList.remove('edit-active');
+}
+
+function esc(s) {
+  if (s===undefined||s===null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggle(sec, id) {
+  checked[sec][id] = !checked[sec][id];
+  saveChecked();
+  renderSection(sec);
+}
+
+function resetSec(sec) {
+  checked[sec] = {};
+  saveChecked();
+  renderSection(sec);
+}
+
+function toggleEdit() {
+  editMode = !editMode;
+  document.getElementById('editToggle').classList.toggle('active', editMode);
+  document.getElementById('editToggle').innerHTML = editMode
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Done`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit`;
+  renderAll();
+}
+
+function addTask(sec) {
+  const cats = data.sections[sec].categories;
+  const targetCat = cats.length > 0 ? cats[cats.length-1] : null;
+  const newTask = { id: uid(), icon:'⭐', name:'New task', reward:'Reward', note:'' };
+  if (targetCat) { targetCat.tasks.push(newTask); }
+  else {
+    cats.push({ cat:'New Category', tasks:[newTask] });
+  }
+  saveData();
+  renderSection(sec);
+}
+
+function addCategory(sec) {
+  data.sections[sec].categories.push({ cat:'New Category', tasks:[] });
+  saveData();
+  renderSection(sec);
+}
+
+function deleteTask(sec, ci, ti) {
+  const t = data.sections[sec].categories[ci].tasks[ti];
+  delete checked[sec][t.id];
+  data.sections[sec].categories[ci].tasks.splice(ti,1);
+  saveData(); saveChecked();
+  renderSection(sec);
+}
+
+function deleteCat(sec, ci) {
+  const tasks = data.sections[sec].categories[ci].tasks;
+  tasks.forEach(t => delete checked[sec][t.id]);
+  data.sections[sec].categories.splice(ci,1);
+  saveData(); saveChecked();
+  renderSection(sec);
+}
+
+function moveTask(sec, ci, ti, dir) {
+  const tasks = data.sections[sec].categories[ci].tasks;
+  const newTi = ti+dir;
+  if (newTi<0||newTi>=tasks.length) return;
+  [tasks[ti],tasks[newTi]]=[tasks[newTi],tasks[ti]];
+  saveData(); renderSection(sec);
+}
+
+function moveTaskToSection(sec, ci, ti, targetSec) {
+  if (!targetSec) return;
+  const task = data.sections[sec].categories[ci].tasks.splice(ti,1)[0];
+  const targetCats = data.sections[targetSec].categories;
+  if (targetCats.length===0) targetCats.push({cat:'General',tasks:[]});
+  targetCats[targetCats.length-1].tasks.push(task);
+  saveData(); renderAll();
+}
+
+function openEmojiPicker(e, sec, ci, ti) {
+  e.stopPropagation();
+  const id = data.sections[sec].categories[ci].tasks[ti].id;
+  const picker = document.getElementById('ep-'+id);
+  if (!picker) return;
+  if (openPicker && openPicker!==picker) openPicker.classList.remove('open');
+  picker.classList.toggle('open');
+  openPicker = picker.classList.contains('open') ? picker : null;
+}
+
+function setIcon(sec, ci, ti, emoji) {
+  data.sections[sec].categories[ci].tasks[ti].icon = emoji;
+  saveData();
+  if (openPicker) { openPicker.classList.remove('open'); openPicker=null; }
+  renderSection(sec);
+}
+
+document.addEventListener('click', ()=>{ if(openPicker){openPicker.classList.remove('open');openPicker=null;} });
+
+// DRAG & DROP
+function dragStart(e, sec, ci, ti) {
+  dragSrc=e.currentTarget.closest('.task');
+  dragSrcSec=sec; dragSrcCatIdx=ci; dragSrcTaskIdx=ti;
+  dragSrc.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+}
+function dragEnd(e) {
+  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  if(dragSrc) dragSrc.classList.remove('dragging');
+  dragSrc=null;
+}
+function dragOver(e, sec, ci, ti) {
+  e.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  const el=document.getElementById('task-'+data.sections[sec].categories[ci].tasks[ti].id);
+  if(el) el.classList.add('drag-over');
+}
+function drop(e, sec, ci, ti) {
+  e.preventDefault();
+  if (dragSrcSec===null) return;
+  const task = data.sections[dragSrcSec].categories[dragSrcCatIdx].tasks.splice(dragSrcTaskIdx,1)[0];
+  data.sections[sec].categories[ci].tasks.splice(ti,0,task);
+  saveData();
+  if(dragSrcSec!==sec) renderAll();
+  else renderSection(sec);
+  dragSrcSec=null;
+}
+
+// TIMERS
+function pad(n){return String(n).padStart(2,'0');}
+function updateTimers(){
+  const now=Date.now();
+  const dm=todayMidnight()-now;
+  document.getElementById('daily-timer').textContent=`${pad(Math.floor(dm/3600000))}:${pad(Math.floor(dm%3600000/60000))}:${pad(Math.floor(dm%60000/1000))}`;
+  const wm=nextMondayMidnight()-now;
+  document.getElementById('weekly-timer').textContent=`${Math.floor(wm/86400000)}d ${pad(Math.floor(wm%86400000/3600000))}:${pad(Math.floor(wm%3600000/60000))}:${pad(Math.floor(wm%60000/1000))}`;
+}
+
+// AUTO RESET
+function checkAutoReset(){
+  const storedResets=JSON.parse(localStorage.getItem(RESET_KEY)||'{}');
+  const now=Date.now(); let changed=false;
+  for(const sec of SECTION_IDS){
+    const storedReset=storedResets[sec]||0;
+    if(now>=storedReset){
+      checked[sec]={};
+      storedResets[sec]=getResetTime(data.sections[sec].reset);
+      changed=true;
+    }
+  }
+  if(changed){ localStorage.setItem(RESET_KEY,JSON.stringify(storedResets)); saveChecked(); renderAll(); }
+}
+
+loadAll();
+renderAll();
+updateTimers();
+setInterval(updateTimers,1000);
+setInterval(checkAutoReset,60000);
+</script>
+</body>
+</html>
