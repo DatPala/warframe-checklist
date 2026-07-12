@@ -14,6 +14,7 @@
     --accent2: #c84b00;
     --weekly: #b06aff;
     --vendor: #e8a020;
+    --target: #35c46a;
     --text: #d0dce8;
     --muted: #6a7a90;
     --done-bg: #0f1a10;
@@ -59,11 +60,15 @@
   .edit-toggle svg { width: 14px; height: 14px; }
 
   /* ROWS */
-  .row { display: grid; gap: 24px; max-width: 1100px; margin: 0 auto 24px; }
-  .row-2 { grid-template-columns: 1fr 1fr; }
-  .row-3 { grid-template-columns: 1fr 1fr 1fr; }
-  @media (max-width: 900px) { .row-3 { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 600px) { .row-2, .row-3 { grid-template-columns: 1fr; } }
+  .row { display: grid; gap: 24px; max-width: 1560px; margin: 0 auto 24px; align-items: start; }
+  .row-daily  { grid-template-columns: 1fr 1fr 2fr 1fr; }
+  .row-weekly { grid-template-columns: 2fr 1fr; }
+  @media (max-width: 1200px) {
+    .row-daily, .row-weekly { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 700px) {
+    .row-daily, .row-weekly { grid-template-columns: 1fr; }
+  }
 
   /* SECTION */
   .section { background: var(--surface); border-radius: 14px; border: 1px solid var(--border); overflow: hidden; }
@@ -73,6 +78,7 @@
   .daily  .section-title { color: var(--accent); }
   .weekly .section-title { color: var(--weekly); }
   .vendor .section-title { color: var(--vendor); }
+  .target .section-title { color: var(--target); }
   .section-title-input {
     font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
     background: transparent; border: none; border-bottom: 1px dashed var(--muted);
@@ -81,6 +87,7 @@
   .daily  .section-title-input { color: var(--accent); }
   .weekly .section-title-input { color: var(--weekly); }
   .vendor .section-title-input { color: var(--vendor); }
+  .target .section-title-input { color: var(--target); }
 
   .progress-wrap { display: flex; align-items: center; gap: 8px; }
   .progress-bar { width: 70px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
@@ -88,11 +95,18 @@
   .daily  .progress-fill { background: var(--accent); }
   .weekly .progress-fill { background: var(--weekly); }
   .vendor .progress-fill { background: var(--vendor); }
+  .target .progress-fill { background: var(--target); }
   .progress-text { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
   .reset-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 4px 10px; font-size: 0.72rem; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }
   .daily  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
   .weekly .reset-btn:hover { border-color: var(--weekly); color: var(--weekly); }
   .vendor .reset-btn:hover { border-color: var(--vendor); color: var(--vendor); }
+  .target .reset-btn:hover { border-color: var(--target); color: var(--target); }
+
+  /* MULTI-COLUMN PANELS */
+  .multicol .task-list { column-count: 2; column-gap: 0; }
+  .cat-block { break-inside: avoid; }
+  @media (max-width: 1200px) { .multicol .task-list { column-count: 1; } }
 
   .task-list { padding: 8px 0; }
 
@@ -189,12 +203,13 @@
   </div>
 </header>
 
-<div class="row row-3" id="row1">
+<div class="row row-daily" id="row1">
   <div class="section daily" id="sec-daily"></div>
   <div class="section vendor" id="sec-dvendor"></div>
   <div class="section vendor" id="sec-standing"></div>
+  <div class="section target" id="sec-targetfarms"></div>
 </div>
-<div class="row row-2" id="row2">
+<div class="row row-weekly" id="row2">
   <div class="section weekly" id="sec-weekly"></div>
   <div class="section weekly" id="sec-wvendor"></div>
 </div>
@@ -204,11 +219,12 @@ const EMOJIS = ['🎁','🔴','🌙','🧬','🛹','⚗️','💠','⚔️','�
 
 const DEFAULT_DATA = {
   sectionMeta: {
-    daily:    { title: '⚡ Daily Tasks',           colorClass: 'daily'  },
-    dvendor:  { title: '🏪 Daily Vendors',         colorClass: 'vendor' },
-    standing: { title: '📈 Daily Standing',        colorClass: 'vendor' },
-    weekly:   { title: '🗓 Weekly Tasks',           colorClass: 'weekly' },
-    wvendor:  { title: '🛒 Weekly Vendors',        colorClass: 'weekly' },
+    daily:       { title: '⚡ Daily Tasks',      colorClass: 'daily'  },
+    dvendor:     { title: '🏪 Daily Vendors',    colorClass: 'vendor' },
+    standing:    { title: '📈 Daily Standing',   colorClass: 'vendor' },
+    targetfarms: { title: '🎯 Target Farms',     colorClass: 'target' },
+    weekly:      { title: '🗓 Weekly Tasks',      colorClass: 'weekly' },
+    wvendor:     { title: '🛒 Weekly Vendors',   colorClass: 'weekly' },
   },
   sections: {
     daily: {
@@ -251,6 +267,19 @@ const DEFAULT_DATA = {
         ]},
         { cat: 'Warframe 1999', tasks: [
           { id:'st8', icon:'⚡', name:'The Hex (Höllvania / WF1999)', reward:'Hex standing → WF1999 gear, Archon Shards, Arcanes', note:'Farm via WF1999 missions and Calendar tasks' },
+        ]},
+      ]
+    },
+    targetfarms: {
+      reset: 'none',
+      categories: [
+        { cat: 'Mods', tasks: [
+          { id:'tf1', icon:'🔥', name:'Scorch', reward:'Shotgun mod — Heat + Status', note:'' },
+          { id:'tf2', icon:'🔥', name:'Scattering Inferno', reward:'Shotgun mod — Heat + Status', note:'' },
+          { id:'tf3', icon:'🔫', name:'Narrow Barrel', reward:'Pistol mod — Puncture + Zoom', note:'' },
+        ]},
+        { cat: 'Arcanes', tasks: [
+          { id:'tf4', icon:'💠', name:'Arcane Blight', reward:'Arcane Enhancement — Heat proc on hit', note:'' },
         ]},
       ]
     },
@@ -304,7 +333,8 @@ const DEFAULT_DATA = {
   }
 };
 
-const SECTION_IDS = ['daily','dvendor','standing','weekly','wvendor'];
+const SECTION_IDS = ['daily','dvendor','standing','targetfarms','weekly','wvendor'];
+const MULTICOL_SECTIONS = ['standing','weekly'];
 const DATA_KEY   = 'wf_data_v5';
 const CHECK_KEY  = 'wf_check_v5';
 const RESET_KEY  = 'wf_reset_v5';
@@ -321,13 +351,19 @@ function nextMondayMidnight() {
   const d=new Date(); const day=d.getDay();
   d.setDate(d.getDate()+(day===0?1:8-day)); d.setHours(0,0,0,0); return d.getTime();
 }
-function getResetTime(type) { return type==='weekly'?nextMondayMidnight():todayMidnight(); }
+function getResetTime(type) {
+  if (type==='none') return Infinity;
+  return type==='weekly'?nextMondayMidnight():todayMidnight();
+}
 
 function loadAll() {
   try { data = JSON.parse(localStorage.getItem(DATA_KEY)); } catch{}
   if (!data) data = JSON.parse(JSON.stringify(DEFAULT_DATA));
   // migrate: ensure sectionMeta exists
   if (!data.sectionMeta) data.sectionMeta = JSON.parse(JSON.stringify(DEFAULT_DATA.sectionMeta));
+  // migrate: inject Target Farms into previously-saved data without wiping edits
+  if (!data.sections.targetfarms) data.sections.targetfarms = JSON.parse(JSON.stringify(DEFAULT_DATA.sections.targetfarms));
+  if (!data.sectionMeta.targetfarms) data.sectionMeta.targetfarms = JSON.parse(JSON.stringify(DEFAULT_DATA.sectionMeta.targetfarms));
 
   const storedResets = JSON.parse(localStorage.getItem(RESET_KEY)||'{}');
   const storedChecked = JSON.parse(localStorage.getItem(CHECK_KEY)||'{}');
@@ -368,7 +404,7 @@ function renderSection(sec) {
   const total = allTasks.length;
   const pct = total ? doneCount/total*100 : 0;
 
-  el.className = 'section '+meta.colorClass;
+  el.className = 'section '+meta.colorClass+(MULTICOL_SECTIONS.includes(sec)?' multicol':'');
 
   const titleEl = editMode
     ? `<input class="section-title-input" value="${esc(meta.title)}" onchange="data.sectionMeta['${sec}'].title=this.value;saveData()" />`
@@ -396,7 +432,7 @@ function renderSection(sec) {
       ? `<input class="cat-name-input" value="${esc(cat.cat)}" onchange="data.sections['${sec}'].categories[${ci}].cat=this.value;saveData()" />`
       : cat.cat;
 
-    html += `<div class="category-divider" data-sec="${sec}" data-ci="${ci}">${catNameEl}${catActions}</div>`;
+    html += `<div class="cat-block"><div class="category-divider" data-sec="${sec}" data-ci="${ci}">${catNameEl}${catActions}</div>`;
 
     cat.tasks.forEach((t, ti) => {
       const done = !!chk[t.id];
@@ -450,6 +486,7 @@ function renderSection(sec) {
                  ${editControls}
                </div>`;
     });
+    html += `</div>`; // close .cat-block
   });
 
   html += `</div>`;
