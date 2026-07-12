@@ -246,26 +246,30 @@ const DEFAULT_DATA = {
         ]},
         { cat: 'Sanctum Anatomica', tasks: [
           { id:'dv2', icon:'🤖', name:'Loid – Resource-to-Voca Trade', reward:'Voca → Cavia standing', note:'Trade Deimos resources for Voca, then convert to Cavia rep' },
+          { id:'dv3', icon:'⚗️', name:'Marie – Artifact Resource Shop', reward:'Tektolyst artifact resources', note:'Buy-shop: purchase Tektolyst artifact crafting resources' },
         ]},
       ]
     },
     standing: {
       reset: 'daily',
       categories: [
-        { cat: 'Open World', tasks: [
+        { cat: 'Earth (Cetus)', tasks: [
           { id:'st1', icon:'🏕', name:'Ostron (Cetus)', reward:'Ostron standing → Zaw parts, Fisher/Miner gear', note:'Cap daily rep via Bounties or Fishing/Mining on the Plains' },
-          { id:'st2', icon:'🏭', name:'Solaris United (Fortuna)', reward:'Solaris standing → Kitgun parts, K-Drive gear', note:'Cap via Bounties or Mining/Fishing on Orb Vallis' },
-          { id:'st3', icon:'🦋', name:'Entrati (Necralisk / Deimos)', reward:'Entrati standing → Warframe/weapon parts, Necramech gear', note:'Cap via Deimos Bounties or Grandmother\'s daily exchange' },
-        ]},
-        { cat: 'Zariman', tasks: [
-          { id:'st4', icon:'👻', name:'The Holdfasts (Zariman)', reward:'Holdfasts standing → Incarnon weapons, Gyre parts', note:'Earn by trading Voidplumes to Yonta' },
           { id:'st5', icon:'🔮', name:'The Quills (Cetus)', reward:'Quills standing → Operator Amps, Arcanes', note:'Trade Sentient Cores to Little Duck or Quills' },
         ]},
+        { cat: 'Venus (Fortuna)', tasks: [
+          { id:'st2', icon:'🏭', name:'Solaris United (Fortuna)', reward:'Solaris standing → Kitgun parts, K-Drive gear', note:'Cap via Bounties or Mining/Fishing on Orb Vallis' },
+          { id:'st9', icon:'🦆', name:'Vox Solaris – Little Duck (Fortuna)', reward:'Vox Solaris standing → Amp parts, Operator Arcanes', note:'Trade Toroids & Gyromag/Atmo/Repeller Systems to Little Duck on Orb Vallis' },
+        ]},
         { cat: 'Deimos', tasks: [
+          { id:'st3', icon:'🦋', name:'Entrati (Necralisk / Deimos)', reward:'Entrati standing → Warframe/weapon parts, Necramech gear', note:'Cap via Deimos Bounties or Grandmother\'s daily exchange' },
           { id:'st6', icon:'🧬', name:'Cavia (Sanctum Anatomica)', reward:'Cavia standing → Netracell access, Bird 3 shop, Arcanes', note:'Trade Voca to Loid; also via Sanctum Anatomica bounties' },
           { id:'st7', icon:'💀', name:'Necraloid (Necralisk)', reward:'Necraloid standing → Necramech parts, Helminth segments', note:'Trade Orokin Matrices from Deimos missions' },
         ]},
-        { cat: 'Warframe 1999', tasks: [
+        { cat: 'Zariman', tasks: [
+          { id:'st4', icon:'👻', name:'The Holdfasts (Zariman)', reward:'Holdfasts standing → Incarnon weapons, Gyre parts', note:'Earn by trading Voidplumes to Yonta' },
+        ]},
+        { cat: 'Höllvania', tasks: [
           { id:'st8', icon:'⚡', name:'The Hex (Höllvania / WF1999)', reward:'Hex standing → WF1999 gear, Archon Shards, Arcanes', note:'Farm via WF1999 missions and Calendar tasks' },
         ]},
       ]
@@ -274,12 +278,12 @@ const DEFAULT_DATA = {
       reset: 'none',
       categories: [
         { cat: 'Mods', tasks: [
-          { id:'tf1', icon:'🔥', name:'Scorch', reward:'Shotgun mod — Heat + Status', note:'' },
-          { id:'tf2', icon:'🔥', name:'Scattering Inferno', reward:'Shotgun mod — Heat + Status', note:'' },
-          { id:'tf3', icon:'🔫', name:'Narrow Barrel', reward:'Pistol mod — Puncture + Zoom', note:'' },
+          { id:'tf1', icon:'🔥', name:'Scorch', reward:'Spy missions — hack all 3 Data Vaults', note:'' },
+          { id:'tf2', icon:'🔥', name:'Scattering Inferno', reward:'Spy missions (all 3 Data Vaults) or Baro Ki\'Teer', note:'' },
+          { id:'tf3', icon:'🔫', name:'Narrow Barrel', reward:'Event-exclusive — Operation: Shadow Debt', note:'Not currently farmable — buy from warframe.market' },
         ]},
         { cat: 'Arcanes', tasks: [
-          { id:'tf4', icon:'💠', name:'Arcane Blight', reward:'Arcane Enhancement — Heat proc on hit', note:'' },
+          { id:'tf4', icon:'💠', name:'Primary Blight', reward:'Duviri Circuit (Steel Path) or Undercroft portals', note:'Also Deepmines bounties or Nightcap vendor (Fergolyte)' },
         ]},
       ]
     },
@@ -335,9 +339,9 @@ const DEFAULT_DATA = {
 
 const SECTION_IDS = ['daily','dvendor','standing','targetfarms','weekly','wvendor'];
 const MULTICOL_SECTIONS = ['standing','weekly'];
-const DATA_KEY   = 'wf_data_v5';
-const CHECK_KEY  = 'wf_check_v5';
-const RESET_KEY  = 'wf_reset_v5';
+const DATA_KEY   = 'wf_data_v6';
+const CHECK_KEY  = 'wf_check_v6';
+const RESET_KEY  = 'wf_reset_v6';
 
 let editMode = false;
 let data, checked;
