@@ -373,6 +373,32 @@ function loadAll() {
   if (!data.sections.targetfarms) data.sections.targetfarms = JSON.parse(JSON.stringify(DEFAULT_DATA.sections.targetfarms));
   if (!data.sectionMeta.targetfarms) data.sectionMeta.targetfarms = JSON.parse(JSON.stringify(DEFAULT_DATA.sectionMeta.targetfarms));
 
+  // migrate: inject newly-added target farm items by id into existing saved data
+  (function injectTasks(){
+    const additions = [
+      { sec:'targetfarms', cat:'Mods',    task:{ id:'tf5', icon:'🧬', name:'Health Conversion', reward:'Cephalon Simaris offerings — 100,000 Standing', note:'Enter any Relay, fast-travel to Simaris. Earn Standing via daily/personal Synthesis targets.' } },
+      { sec:'targetfarms', cat:'Mods',    task:{ id:'tf6', icon:'🤖', name:'Sentient Surge (Ocucor augment)', reward:'Daughter (Necralisk, Deimos) — 50 Mother Tokens', note:'Ocucor augment: kills refill the magazine. Originally Nightwave Nora\'s Mix Vol 4 (Rank 9).' } },
+      { sec:'targetfarms', cat:'Arcanes', task:{ id:'tf7', icon:'🔮', name:'Arcane Arachne', reward:'Eidolon Hydrolyst kill/capture, or Orphix Pluto/Veil Proxima (Rot C)', note:'Weapon damage buff on wall latch. Also from Undercroft Portal side objectives.' } },
+      { sec:'targetfarms', cat:'Arcanes', task:{ id:'tf8', icon:'⚡', name:'Arcane Hot Shot', reward:'Kaya weekly shop (Höllvania, Rank 5 — 5 Pix Chip)', note:'Also Temporal Archimedea rewards, or Loid\'s Höllvania Arcane Collection (200 Vosfor).' } },
+    ];
+    // collect every task id already present across all sections (handles moved tasks)
+    const existing = new Set();
+    for (const s of Object.values(data.sections)) {
+      for (const c of s.categories) for (const t of c.tasks) existing.add(t.id);
+    }
+    let changed = false;
+    for (const add of additions) {
+      if (existing.has(add.task.id)) continue;
+      const secData = data.sections[add.sec];
+      if (!secData) continue;
+      let cat = secData.categories.find(c => c.cat === add.cat);
+      if (!cat) { cat = { cat: add.cat, tasks: [] }; secData.categories.push(cat); }
+      cat.tasks.push(JSON.parse(JSON.stringify(add.task)));
+      changed = true;
+    }
+    if (changed) saveData();
+  })();
+
   const storedResets = JSON.parse(localStorage.getItem(RESET_KEY)||'{}');
   const storedChecked = JSON.parse(localStorage.getItem(CHECK_KEY)||'{}');
   const now = Date.now();
