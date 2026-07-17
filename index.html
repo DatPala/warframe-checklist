@@ -232,6 +232,7 @@ const DEFAULT_DATA = {
       categories: [
         { cat: 'Essential', tasks: [
           { id:'d1', icon:'🎁', name:'Daily Tribute / Login Reward', reward:'Endo, Credits, Mods, Boosters', note:'Log in to claim — escalates on milestone days' },
+          { id:'d4', icon:'🐴', name:'Duviri Resources (Daily Spiral)', reward:'Duviri-exclusive resources — Pathos Clamps, Aggristone, Connla Sprout, etc.', note:'The daily emotion spiral rotates which resources & enemies appear. Run the Duviri Experience to claim daily rewards.' },
           { id:'d2', icon:'🔴', name:'Sortie (3 missions)', reward:'Anasa Sculpture, Riven Mod, Legendary Core chance', note:'New set daily. Requires The War Within.' },
           { id:'d3', icon:'🌙', name:'Nightwave Daily Challenge', reward:'Nightwave XP → Nora Credits', note:'Check Nightwave screen for today\'s Act challenge' },
         ]},
@@ -281,12 +282,10 @@ const DEFAULT_DATA = {
           { id:'tf1', icon:'🔥', name:'Scorch', reward:'Spy missions — hack all 3 Data Vaults', note:'' },
           { id:'tf2', icon:'🔥', name:'Scattering Inferno', reward:'Spy missions (all 3 Data Vaults) or Baro Ki\'Teer', note:'' },
           { id:'tf3', icon:'🔫', name:'Narrow Barrel', reward:'Event-exclusive — Operation: Shadow Debt', note:'Not currently farmable — buy from warframe.market' },
-          { id:'tf5', icon:'🧬', name:'Health Conversion', reward:'Cephalon Simaris offerings — 100,000 Standing', note:'Enter any Relay, fast-travel to Simaris. Earn Standing via daily/personal Synthesis targets.' },
           { id:'tf6', icon:'🤖', name:'Sentient Surge (Ocucor augment)', reward:'Daughter (Necralisk, Deimos) — 50 Mother Tokens', note:'Ocucor augment: kills refill the magazine. Originally Nightwave Nora\'s Mix Vol 4 (Rank 9).' },
         ]},
         { cat: 'Arcanes', tasks: [
           { id:'tf4', icon:'💠', name:'Primary Blight', reward:'Duviri Circuit (Steel Path) or Undercroft portals', note:'Also Deepmines bounties or Nightcap vendor (Fergolyte)' },
-          { id:'tf7', icon:'🔮', name:'Arcane Arachne', reward:'Eidolon Hydrolyst kill/capture, or Orphix Pluto/Veil Proxima (Rot C)', note:'Weapon damage buff on wall latch. Also from Undercroft Portal side objectives.' },
           { id:'tf8', icon:'⚡', name:'Arcane Hot Shot', reward:'Kaya weekly shop (Höllvania, Rank 5 — 5 Pix Chip)', note:'Also Temporal Archimedea rewards, or Loid\'s Höllvania Arcane Collection (200 Vosfor).' },
         ]},
       ]
@@ -376,9 +375,8 @@ function loadAll() {
   // migrate: inject newly-added target farm items by id into existing saved data
   (function injectTasks(){
     const additions = [
-      { sec:'targetfarms', cat:'Mods',    task:{ id:'tf5', icon:'🧬', name:'Health Conversion', reward:'Cephalon Simaris offerings — 100,000 Standing', note:'Enter any Relay, fast-travel to Simaris. Earn Standing via daily/personal Synthesis targets.' } },
+      { sec:'daily',       cat:'Essential', task:{ id:'d4', icon:'🐴', name:'Duviri Resources (Daily Spiral)', reward:'Duviri-exclusive resources — Pathos Clamps, Aggristone, Connla Sprout, etc.', note:'The daily emotion spiral rotates which resources & enemies appear. Run the Duviri Experience to claim daily rewards.' } },
       { sec:'targetfarms', cat:'Mods',    task:{ id:'tf6', icon:'🤖', name:'Sentient Surge (Ocucor augment)', reward:'Daughter (Necralisk, Deimos) — 50 Mother Tokens', note:'Ocucor augment: kills refill the magazine. Originally Nightwave Nora\'s Mix Vol 4 (Rank 9).' } },
-      { sec:'targetfarms', cat:'Arcanes', task:{ id:'tf7', icon:'🔮', name:'Arcane Arachne', reward:'Eidolon Hydrolyst kill/capture, or Orphix Pluto/Veil Proxima (Rot C)', note:'Weapon damage buff on wall latch. Also from Undercroft Portal side objectives.' } },
       { sec:'targetfarms', cat:'Arcanes', task:{ id:'tf8', icon:'⚡', name:'Arcane Hot Shot', reward:'Kaya weekly shop (Höllvania, Rank 5 — 5 Pix Chip)', note:'Also Temporal Archimedea rewards, or Loid\'s Höllvania Arcane Collection (200 Vosfor).' } },
     ];
     // collect every task id already present across all sections (handles moved tasks)
@@ -395,6 +393,20 @@ function loadAll() {
       if (!cat) { cat = { cat: add.cat, tasks: [] }; secData.categories.push(cat); }
       cat.tasks.push(JSON.parse(JSON.stringify(add.task)));
       changed = true;
+    }
+    if (changed) saveData();
+  })();
+
+  // migrate: drop target farm items that were removed from the list
+  (function removeTasks(){
+    const removedIds = new Set(['tf5','tf7']);
+    let changed = false;
+    for (const s of Object.values(data.sections)) {
+      for (const c of s.categories) {
+        const before = c.tasks.length;
+        c.tasks = c.tasks.filter(t => !removedIds.has(t.id));
+        if (c.tasks.length !== before) changed = true;
+      }
     }
     if (changed) saveData();
   })();
